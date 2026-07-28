@@ -1,0 +1,30 @@
+---
+description: "Apply these strict guidelines and constraints whenever working on or building the visitor-logger Laravel package."
+glob: "**/*.php, **/*.js, **/*.json"
+---
+
+# Agent Rules for Building the `visitor-logger` Package
+
+1. **Strict file creation** – Only create the files explicitly requested in the current step. Never add extra files, routes, config keys, or methods unless instructed.
+
+2. **Use exact namespace and imports** – Always use fully qualified class names or proper `use` statements. Never assume a class exists unless it’s a standard Laravel or PHP class.
+
+3. **Follow Laravel naming conventions** – Controllers must be named `SomethingController`, models singular, migrations with a meaningful timestamp, configuration keys in snake_case, etc.
+
+4. **No placeholder or fake implementations** – Every method must contain real, functional code. If a dependency (like `VisitorLoggerManager`) hasn’t been created yet, bind an empty class that won’t throw errors, but do *not* leave a comment like `// TODO`.
+
+5. **Correct session handling** – When storing data in the session for use by a subsequent AJAX call, call `session()->save()` explicitly after setting the value to guarantee persistence.
+
+6. **Config‑driven** – All configurable values (IP exclusion list, session key, route path, geolocation driver, etc.) must be read from `config('visitor-logger.*')` and never hardcoded.
+
+7. **Thin controllers** – Controllers should only validate input, call a service/model, and return a response. No business logic.
+
+8. **Respect the user’s queue choice** – Jobs must use `onConnection()` only when a non‑default connection is specified in config; otherwise use the project default.
+
+9. **Error handling** – Wrap external API calls and file reads (`GeoIp2`) in try/catch and return `null` on failure instead of throwing an unhandled exception.
+
+10. **JavaScript dependency** – The script must check for the existence of `FingerprintJS` and log a warning if missing, but never crash the page.
+
+11. **No hardcoded URLs** – The fingerprint route is injected via a config variable; the JS uses a global `visitorLoggerRoute` variable or falls back to `'/log-fingerprint'` as a sane default.
+
+12. **Match the migration** – The model’s `$fillable` and any updates must exactly match the columns in the migration.

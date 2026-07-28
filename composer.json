@@ -1,0 +1,28 @@
+{
+    "name": "dgiftedx/visitor-logger",
+    "description": "Log visitor data including IP, fingerprint, browser & geolocation in Laravel.",
+    "type": "library",
+    "require": {
+        "php": "^8.0",
+        "illuminate/support": "^9.0|^10.0|^11.0",
+        "jenssegers/agent": "^2.6",
+        "geoip2/geoip2": "^2.13"
+    },
+    "autoload": {
+        "psr-4": {
+            "Dgiftedx\\VisitorLogger\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Dgiftedx\\VisitorLogger\\VisitorLoggerServiceProvider"
+            ],
+            "aliases": {
+                "VisitorLogger": "Dgiftedx\\VisitorLogger\\Facades\\VisitorLogger"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
