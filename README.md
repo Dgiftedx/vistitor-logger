@@ -1,6 +1,6 @@
-# visitor-logger
+# Visitor Logger for Laravel
 
-Log visitor data including IP, fingerprint, browser & geolocation in Laravel.
+Log visitor data including IP, device fingerprint, browser, platform, and geolocation in Laravel effortlessly.
 
 ## Requirements
 
@@ -37,12 +37,14 @@ php artisan migrate
 
 ### 4. Include scripts in your layout
 
-Add FingerprintJS from the CDN and the published asset inside your `<head>` or before `</body>`:
+Add FingerprintJS from the CDN and the published asset inside your `<head>` or before `</body>`. This is required if you want to track the device fingerprint:
 
 ```html
 <script src="https://openfpcdn.io/fingerprintjs/v4"></script>
 <script src="{{ asset('vendor/visitor-logger.js') }}"></script>
 ```
+
+> **Note**: The package automatically registers its middleware globally to log every request. You don't need to manually add it to your `Kernel.php` or `bootstrap/app.php`.
 
 ### 5. (Optional) Custom fingerprint route
 
@@ -72,6 +74,8 @@ After publishing, edit `config/visitor-logger.php`:
 
 ## Geolocation
 
+When `queue_enrich` is set to true (default), geolocation data (latitude, longitude, country, city) is fetched in the background via queued jobs. **Ensure your queue worker is running** (`php artisan queue:work`) to process these jobs.
+
 ### MaxMind (default)
 
 Download a [GeoLite2-City database](https://dev.maxmind.com/geoip/geolite2-free-geolocation-data) and place it at `storage/app/GeoLite2-City.mmdb` (or update `maxmind_database_path` in config).
@@ -87,8 +91,11 @@ Use the `VisitorLogger` facade anywhere in your application:
 ```php
 use Dgiftedx\VisitorLogger\Facades\VisitorLogger;
 
-// Latest 20 logs
+// Latest logs (default limit: 20)
 VisitorLogger::recent();
+
+// Latest logs with custom limit
+VisitorLogger::recent(50);
 
 // Logs from a specific country
 VisitorLogger::fromCountry('United States');
@@ -102,12 +109,44 @@ VisitorLogger::withFingerprint();
 // Logs from today
 VisitorLogger::today();
 
-// Top 5 browsers by visit count
+// Top browsers by visit count (default limit: 5)
 VisitorLogger::statsByBrowser();
+
+// Top browsers by visit count with custom limit
+VisitorLogger::statsByBrowser(10);
 
 // Total log count
 VisitorLogger::count();
 
-// Raw query builder for custom queries
-VisitorLogger::query()->where('platform', 'Windows')->get();
+// Raw query builder for custom queries (e.g., filter by device_type)
+VisitorLogger::query()->where('device_type', 'mobile')->get();
+```
+
+### The VisitorLog Model
+
+You can also interact directly with the Eloquent model: `Dgiftedx\VisitorLogger\Models\VisitorLog`.
+The following attributes are logged and available on the model:
+
+- `ip_address`
+- `user_agent`
+- `browser`
+- `browser_version`
+- `platform` (e.g., Windows, OS X, Linux)
+- `device_type` (`desktop`, `mobile`, `tablet`)
+- `device_fingerprint`
+- `latitude`
+- `longitude`
+- `country`
+- `city`
+- `referer`
+- `url`
+- `session_id`
+
+```php
+use Dgiftedx\VisitorLogger\Models\VisitorLog;
+
+// Example: Get all mobile visitors from a specific city
+$mobileLogs = VisitorLog::where('device_type', 'mobile')
+    ->where('city', 'New York')
+    ->get();
 ```
